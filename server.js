@@ -54,7 +54,31 @@ app.post("/login",async(req, res)=>{
 app.get("/perfil",async(req, res)=>{
     res.json("entrou no perfil")
 })
+app.post("/login",async(req, res)=>{
+   const {nome,senha}=req.body
+   const usuario = await prisma.usuario.findFirst({
+    where:{nome}
+   })
+   if(!usuario){
+    res.status(404).json({error:"usuario não existe"})
+   }
+   const psenha = usuario.senha
+   bcrypt.compare(senha, psenha).then((Match)=>{
+   if(!match){
+    res.json({error:"Senha incorreta"})
+   }else{
+    const acessToken = createTokens(usuario)
+    res.cookie("acess-token",acessToken,{
+        httpOnly:false
+    })
+    res.json("Logged in")
+   }
+   })
+})
 
+app.get("/perfil",async(req, res)=>{
+    res.json("entrou no perfil")
+})
 
 app.listen(8080,()=>{
     console.log("Rodando na porta 8080")
